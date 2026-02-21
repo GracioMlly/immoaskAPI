@@ -28,10 +28,10 @@ def filter_query_builder(path_parameters: dict[str, Any], all_filters: list[str]
     ]
 
     if len(usable_filters) == 0:
-        query = "SELECT * FROM offers"
+        query = "SELECT offer_id, type, title, price, surface, localisation, description, images, source FROM offers"
         return [query, None]
     else:
-        query = "SELECT * FROM offers WHERE "
+        query = "SELECT offer_id, type, title, price, surface, localisation, description, images, source FROM offers WHERE "
         for index, filter in enumerate(usable_filters):
             match (filter):
                 case "type":
@@ -103,7 +103,9 @@ app = FastAPI()
 # Endpoint pour récupérer toutes les annonces
 @app.get("/offers")
 def get_offers():
-    cursor.execute("SELECT * FROM offers")
+    cursor.execute(
+        "SELECT offer_id, type, title, price, surface, localisation, description, images, source FROM offers"
+    )
     result = cursor.fetchall()
 
     if result is not None:
@@ -122,7 +124,7 @@ def search_offers(query: str, limit: int = 5):
     )
 
     cursor.execute(
-        "SELECT * FROM offers ORDER BY embedding <=> %s::vector LIMIT %s",
+        "SELECT offer_id, type, title, price, surface, localisation, description, images, source FROM offers ORDER BY embedding <=> %s::vector LIMIT %s",
         [search_embedding.tolist(), limit],
     )
     result = cursor.fetchall()
@@ -159,7 +161,10 @@ def filter_offers(req: Request):
 # son id
 @app.get("/offers/{offer_id}")
 def get_offer(offer_id: int):
-    cursor.execute("SELECT * FROM offers WHERE offer_id = %s", [offer_id])
+    cursor.execute(
+        "SELECT offer_id, type, title, price, surface, localisation, description, images, source FROM offers WHERE offer_id = %s",
+        [offer_id],
+    )
     result = cursor.fetchone()
 
     if result is not None:
